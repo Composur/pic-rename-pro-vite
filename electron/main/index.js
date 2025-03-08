@@ -1,6 +1,9 @@
-const { app, BrowserWindow, ipcMain, dialog, protocol } = require('electron')
+const { app, BrowserWindow, ipcMain, dialog, protocol, net } = require('electron')
 const path = require('path')
 const fs = require('fs')
+const nodeUrl = require('url')
+console.log('Loading protocol-handler...');
+const { registerProtocolHandler } = require('./protocol-handler.js')
 // 禁用GPU加速以避免某些系统上的问题
 app.disableHardwareAcceleration()
 
@@ -30,18 +33,14 @@ function createWindow() {
 
   // 加载应用
   if (process.env.VITE_DEV_SERVER_URL) {
-    const indexPath = path.join(app.getAppPath(), 'dist', 'index.html')
-    console.log('Loading production index.html from:', indexPath)
     // 开发模式：加载Vite开发服务器URL
     mainWindow.loadURL(process.env.VITE_DEV_SERVER_URL)
+    // mainWindow.loadURL('app://dist/index.html')
     // 打开开发者工具
     mainWindow.webContents.openDevTools()
   } else {
-    // 生产模式：加载打包后的index.html
-    // 使用app.getAppPath()获取应用根目录，然后找到dist目录下的index.html
-    const indexPath = path.join(app.getAppPath(), 'dist', 'index.html')
-    console.log('Loading production index.html from:', indexPath)
-    mainWindow.loadFile(indexPath)
+    // 生产模式：使用自定义协议加载应用
+    mainWindow.loadURL('app://dist/index.html')
   }
 
   // 设置窗口图标
@@ -55,6 +54,18 @@ function createWindow() {
 
 // 当Electron完成初始化并准备创建浏览器窗口时调用此方法
 app.whenReady().then(() => {
+  // 注册自定义协议
+  registerProtocolHandler('app', app.getAppPath(), 'dist', true);
+  // protocol.handle('app', (request) => {
+  //   const url = new URL(request.url)
+  //   console.log('Request URL:', request.url)
+  //   console.log('Request URL pathname:', url.pathname)
+  //   const filePath = path.join(app.getAppPath(), 'dist', url.pathname)
+  //   console.log('Loading file:', filePath)
+  //   console.log('pathToFileURL:', nodeUrl.pathToFileURL(filePath).toString())
+  //   return net.fetch(nodeUrl.pathToFileURL(filePath).toString())
+  // })
+
   createWindow()
 
   // 在macOS上，当点击dock图标且没有其他窗口打开时，重新创建一个窗口

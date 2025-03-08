@@ -1,10 +1,11 @@
 /* 全局样式文件 */
+/* 导入变量 */
+@use './variables' as *;
 
 /* 导入Element Plus样式 */
 @import 'element-plus/dist/index.css';
 
-/* 导入变量 */
-@import './variables.scss';
+
 
 /* 全局样式覆盖 */
 :root {

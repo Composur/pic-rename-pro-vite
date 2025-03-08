@@ -3,6 +3,7 @@ import vue from '@vitejs/plugin-vue'
 import electron from 'vite-plugin-electron'
 import renderer from 'vite-plugin-electron-renderer'
 import { resolve } from 'path'
+import path from 'path'
 
 // https://vitejs.dev/config/
 export default defineConfig(({ command, mode }) => {
@@ -15,9 +16,26 @@ export default defineConfig(({ command, mode }) => {
         {
           // Main process
           entry: 'electron/main/index.js',
-          onstart(options) {
-            options.startup()
-          },
+          // onstart(options) {
+          //   options.startup()
+          // },
+          vite: {
+            build: {
+              outDir: 'dist-electron',
+              rollupOptions: {
+                input: {
+                  index: resolve(__dirname, 'electron/main/index.js'),
+                  'protocol-handler': resolve(__dirname, 'electron/main/protocol-handler.js'), // 显式包含
+                },
+                output: {
+                  entryFileNames: '[name].js',
+                  preserveModules: true, // 保留所有模块
+                  preserveModulesRoot: path.resolve(__dirname, 'electron/main'), // 绝对路径\\\
+                  format: 'cjs', // 输出格式为 CommonJS
+                }
+              }
+            }
+          }
         },
         {
           // Preload process
