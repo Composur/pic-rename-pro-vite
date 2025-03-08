@@ -1,7 +1,6 @@
-const { app, BrowserWindow, ipcMain, dialog } = require('electron')
+const { app, BrowserWindow, ipcMain, dialog, protocol } = require('electron')
 const path = require('path')
 const fs = require('fs')
-
 // 禁用GPU加速以避免某些系统上的问题
 app.disableHardwareAcceleration()
 
@@ -23,6 +22,7 @@ function createWindow() {
       preload: path.join(__dirname, 'preload/index.js'),
       contextIsolation: true,  // 启用上下文隔离
       nodeIntegration: false,   // 禁用 Node.js 集成
+      webSecurity: false,       // 启用Web安全
     },
     autoHideMenuBar: true,
     title: 'PicRenamePro',
@@ -30,13 +30,18 @@ function createWindow() {
 
   // 加载应用
   if (process.env.VITE_DEV_SERVER_URL) {
+    const indexPath = path.join(app.getAppPath(), 'dist', 'index.html')
+    console.log('Loading production index.html from:', indexPath)
     // 开发模式：加载Vite开发服务器URL
     mainWindow.loadURL(process.env.VITE_DEV_SERVER_URL)
     // 打开开发者工具
     mainWindow.webContents.openDevTools()
   } else {
     // 生产模式：加载打包后的index.html
-    mainWindow.loadFile(path.join(__dirname, '../../index.html'))
+    // 使用app.getAppPath()获取应用根目录，然后找到dist目录下的index.html
+    const indexPath = path.join(app.getAppPath(), 'dist', 'index.html')
+    console.log('Loading production index.html from:', indexPath)
+    mainWindow.loadFile(indexPath)
   }
 
   // 设置窗口图标

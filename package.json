@@ -8,7 +8,7 @@
     "dev": "vite",
     "dev:electron": "vite --mode electron",
     "build": "vite build",
-    "build:electron": "vue-tsc && vite build --mode electron && electron-builder",
+    "build:electron": "vite build --mode electron && electron-builder",
     "preview": "vite preview",
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs --fix --ignore-path .gitignore"
   },
@@ -27,6 +27,7 @@
     "eslint": "^8.54.0",
     "eslint-plugin-vue": "^9.18.1",
     "sass": "^1.69.5",
+    "terser": "^5.39.0",
     "typescript": "^5.2.2",
     "vite": "^5.0.0",
     "vite-plugin-electron": "^0.15.4",
@@ -35,5 +36,26 @@
   },
   "engines": {
     "node": ">=18.0.0"
+  },
+  "build": {
+    "appId": "com.edison.picrenamepro",
+    "productName": "PicRenamePro",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "dist-electron/**/*"
+    ],
+    "mac": {
+      "category": "public.app-category.utilities",
+      "target": ["dmg"]
+    },
+    "win": {
+      "target": ["nsis"]
+    },
+    "linux": {
+      "target": ["AppImage"]
+    }
   }
 }
