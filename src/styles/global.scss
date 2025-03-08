@@ -1,0 +1,36 @@
+/* 全局样式文件 */
+
+/* 导入Element Plus样式 */
+@import 'element-plus/dist/index.css';
+
+/* 导入变量 */
+@import './variables.scss';
+
+/* 全局样式覆盖 */
+:root {
+  --el-color-primary: #{$primary-color};
+  --el-color-success: #{$success-color};
+  --el-color-warning: #{$warning-color};
+  --el-color-danger: #{$danger-color};
+  --el-color-info: #{$info-color};
+}
+
+/* 确保Element Plus组件样式正确应用 */
+.el-button,
+.el-input,
+.el-select,
+.el-dialog,
+.el-message,
+.el-notification {
+  font-family: 'Helvetica Neue', Helvetica, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', '微软雅黑', Arial, sans-serif;
+}
+
+/* 修复可能的样式冲突 */
+.el-message-box {
+  max-width: 90%;
+}
+
+/* 确保图标正确显示 */
+.el-icon {
+  vertical-align: middle;
+}
