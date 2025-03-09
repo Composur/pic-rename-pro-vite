@@ -6,7 +6,7 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang='ts'>
 // App.vue是应用的根组件，负责提供全局布局和配置
 </script>
 

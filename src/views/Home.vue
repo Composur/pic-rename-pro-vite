@@ -116,8 +116,7 @@
   </div>
 </template>
 
-<script setup>
-import { ref, computed } from "vue"
+<script setup lang="ts">
 import { ElMessage, ElLoading } from "element-plus"
 import {
   Loading,
@@ -128,17 +127,28 @@ import {
   MagicStick,
 } from "@element-plus/icons-vue"
 import { createWorker } from "tesseract.js"
-import axios from "axios"
+import { computed, ref } from "vue"
+import { FileResult, SaveResult } from "electron/main/types"
 
 // 图片文件列表
-const imageFiles = ref([])
+interface ImageFile {
+  path: string
+  originalName: string
+  url: string
+  ocrText: string
+  newName: string
+  ocrLoading: boolean
+  aiLoading: boolean
+}
+const imageFiles = ref<ImageFile[]>([])
 
 // 计算属性：是否有已重命名的图片
 const hasRenamedImages = computed(() => {
   return imageFiles.value.some((file) => file.newName)
 })
 
-// 选择图片文件
+// 选择图片文件// 修改后的 handleSelectImages 函数
+// 修改后的 handleSelectImages 函数
 async function handleSelectImages() {
   try {
     let filePaths = []
@@ -154,10 +164,15 @@ async function handleSelectImages() {
       input.multiple = true
       input.accept = "image/*"
 
-      const fileList = await new Promise((resolve) => {
-        input.onchange = (e) => resolve(e.target.files)
+      const fileList = await new Promise<FileList | null>((resolve) => {
+        input.onchange = (e) => {
+          const target = e.target as HTMLInputElement
+          resolve(target?.files || null)
+        }
         input.click()
       })
+
+      if (!fileList) return
 
       filePaths = Array.from(fileList)
     }
@@ -167,23 +182,26 @@ async function handleSelectImages() {
     // 处理选择的图片文件
     const newFiles = await Promise.all(
       filePaths.map(async (file) => {
-        // 创建文件URL
-        const url = window.electronAPI
-          ? await (async () => {
-              try {
-                // 使用新的API从主进程获取图片数据
-                const base64Data = await window.electronAPI.readImageFile(file)
-                return base64Data // 直接返回base64数据URL
-              } catch (error) {
-                console.error("无法加载Electron文件:", error)
-                return ""
-              }
-            })()
-          : URL.createObjectURL(file)
+        let url: string
+        let path: string
+        let originalName: string
+
+        if (window.electronAPI) {
+          // 使用新的API从主进程获取图片数据
+          const base64Data = await window.electronAPI.readImageFile(file)
+          url = base64Data // 直接返回base64数据URL
+          path = file
+          originalName = file.split("/").pop() || ""
+        } else {
+          // Web环境
+          url = URL.createObjectURL(file as File)
+          path = file.path || ""
+          originalName = (file as File).name
+        }
 
         return {
-          path: window.electronAPI ? file : file.path,
-          originalName: window.electronAPI ? file.split("/").pop() : file.name,
+          path,
+          originalName,
           url,
           ocrText: "",
           newName: "",
@@ -288,7 +306,7 @@ async function saveRenamedImages() {
   })
 
   try {
-    let result
+    let result: SaveResult
 
     if (window.electronAPI) {
       // Electron环境

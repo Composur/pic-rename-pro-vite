@@ -4,7 +4,7 @@ import electron from 'vite-plugin-electron'
 import renderer from 'vite-plugin-electron-renderer'
 import { resolve } from 'path'
 import path from 'path'
-import { dependencies } from './package.json'
+// import { dependencies } from './package.json'
 import fs from 'fs'
 
 // 递归收集目录下的所有 JS 文件
@@ -24,9 +24,9 @@ function collectMainProcessEntries() {
       if (stats.isDirectory()) {
         // 递归处理子目录
         traverseDir(fullPath, relativePath)
-      } else if (file.endsWith('.js')) {
-        // 添加 JS 文件作为入口
-        const entryName = relativePath.replace(/\.js$/, '')
+      } else if (file.endsWith('.js') || file.endsWith('.ts')) {
+        // 添加 JS/TS 文件作为入口
+        const entryName = relativePath.replace(/\.(js|ts)$/, '')
         entries[entryName] = resolve(mainDir, relativePath)
       }
     })
@@ -47,7 +47,7 @@ export default defineConfig(({ command, mode }) => {
       isElectron && electron([
         {
           // Main process
-          entry: 'electron/main/index.js',
+          entry: 'electron/main/index.ts',
           vite: {
             build: {
               outDir: 'dist-electron',
@@ -66,7 +66,7 @@ export default defineConfig(({ command, mode }) => {
         },
         {
           // Preload process
-          entry: 'electron/preload/index.js',
+          entry: 'electron/preload/index.ts',
           vite: {
             build: {
               outDir: 'dist-electron/preload',

@@ -1,4 +1,5 @@
-const { app, BrowserWindow, ipcMain, dialog, protocol, net } = require('electron')
+import { app, BrowserWindow, ipcMain, dialog, net } from 'electron'
+import { FileResult, SaveResult } from './types';
 const path = require('path')
 const fs = require('fs')
 const nodeUrl = require('url')
@@ -92,7 +93,7 @@ ipcMain.handle('select-images', async () => {
 })
 
 // 处理保存重命名后的图片的IPC消息
-ipcMain.handle('save-renamed-images', async (event, files) => {
+ipcMain.handle('save-renamed-images', async (event, files): Promise<SaveResult> => {
   // 打开对话框让用户选择保存目录
   const targetDir = await dialog.showOpenDialog({
     properties: ['openDirectory'],
@@ -105,7 +106,7 @@ ipcMain.handle('save-renamed-images', async (event, files) => {
   console.log(`准备保存文件，数量: ${files.length}`)
   try {
     // 创建一个结果数组，记录每个文件的保存状态
-    const results = []
+    const results: FileResult[] = []
 
     for (const file of files) {
       if (!file.path || !file.newName) {
@@ -137,13 +138,16 @@ ipcMain.handle('save-renamed-images', async (event, files) => {
         results.push({
           originalName: path.basename(sourcePath),
           newName: file.newName,
-          success: true
+          success: true,
+          message: '文件保存成功'
         })
-      } catch (fileError) {
+      } catch (fileError: unknown) {
+        // 确保 fileError 是 Error 类型
+        const error = fileError instanceof Error ? fileError : new Error('未知错误');
         results.push({
           originalName: path.basename(sourcePath),
           success: false,
-          message: fileError.message
+          message: error.message
         })
       }
     }
@@ -161,7 +165,7 @@ ipcMain.handle('save-renamed-images', async (event, files) => {
     }
   } catch (error) {
     console.error('保存文件时发生错误:', error)
-    return { success: false, message: `保存失败: ${error.message}` }
+    return { success: false, message: `保存失败: ${(error as Error).message}` }
   }
 })
 
@@ -172,8 +176,10 @@ ipcMain.handle('read-image-file', async (event, filePath) => {
     const fileData = fs.readFileSync(filePath)
     // 将文件内容转换为Base64字符串
     return `data:image/${path.extname(filePath).substring(1)};base64,${fileData.toString('base64')}`
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('读取图片文件失败:', error)
-    throw new Error(`读取图片文件失败: ${error.message}`)
+    // 确保 error 是 Error 类型
+    const errorMessage = error instanceof Error ? error.message : '未知错误'
+    throw new Error(`读取图片文件失败: ${errorMessage}`)
   }
 })

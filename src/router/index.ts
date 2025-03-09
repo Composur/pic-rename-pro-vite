@@ -1,7 +1,7 @@
-import { createRouter, createWebHistory, createWebHashHistory } from 'vue-router'
+import { createRouter, createWebHistory, createWebHashHistory, RouteRecordRaw } from 'vue-router'
 
 // 路由配置
-const routes = [
+const routes: Array<RouteRecordRaw> = [
   {
     path: '/',
     name: 'Home',
@@ -34,7 +34,7 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
   // 设置页面标题
   if (to.meta.title) {
-    document.title = to.meta.title
+    document.title = to.meta.title as string
   }
   next()
 })

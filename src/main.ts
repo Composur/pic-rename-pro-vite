@@ -3,7 +3,9 @@ import ElementPlus from 'element-plus'
 // 导入全局样式文件，它已经包含了Element Plus的样式
 import '@/styles/global.scss'
 import * as ElementPlusIconsVue from '@element-plus/icons-vue'
+// 添加类型声明以解决 TypeScript 报错
 import App from './App.vue'
+
 import router from './router'
 
 // 创建Vue应用实例

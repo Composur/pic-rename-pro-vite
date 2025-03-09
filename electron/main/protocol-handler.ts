@@ -9,22 +9,21 @@ const nodeUrl = require('url')
  * @param {string} distDir - 分发目录名称，默认为 'dist'
  * @param {boolean} enableLogging - 是否启用日志记录，默认为 false
  */
-function registerProtocolHandler(protocolName, appPath, distDir = 'dist', enableLogging = false) {
-  protocol.handle(protocolName, (request) => {
+function registerProtocolHandler(protocolName: string, appPath: string, distDir: string = 'dist', enableLogging: boolean = false) {
+  protocol.handle(protocolName, (request: Electron.ProtocolRequest) => {
     const url = new URL(request.url)
-    
     if (enableLogging) {
       console.log('Request URL:', request.url)
       console.log('Request URL pathname:', url.pathname)
     }
-    
+
     const filePath = path.join(appPath, distDir, url.pathname)
-    
+
     if (enableLogging) {
       console.log('Loading file:', filePath)
       console.log('pathToFileURL:', nodeUrl.pathToFileURL(filePath).toString())
     }
-    
+
     return net.fetch(nodeUrl.pathToFileURL(filePath).toString())
   })
 }
