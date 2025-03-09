@@ -4,10 +4,42 @@ import electron from 'vite-plugin-electron'
 import renderer from 'vite-plugin-electron-renderer'
 import { resolve } from 'path'
 import path from 'path'
+import { dependencies } from './package.json'
+import fs from 'fs'
+
+// 递归收集目录下的所有 JS 文件
+function collectMainProcessEntries() {
+  const mainDir = path.resolve(__dirname, 'electron/main')
+  const entries = {}
+
+  // 递归函数，用于遍历目录
+  function traverseDir(dir, baseDir = '') {
+    const files = fs.readdirSync(dir)
+
+    files.forEach(file => {
+      const fullPath = path.join(dir, file)
+      const relativePath = path.join(baseDir, file)
+      const stats = fs.statSync(fullPath)
+
+      if (stats.isDirectory()) {
+        // 递归处理子目录
+        traverseDir(fullPath, relativePath)
+      } else if (file.endsWith('.js')) {
+        // 添加 JS 文件作为入口
+        const entryName = relativePath.replace(/\.js$/, '')
+        entries[entryName] = resolve(mainDir, relativePath)
+      }
+    })
+  }
+
+  traverseDir(mainDir)
+  return entries
+}
 
 // https://vitejs.dev/config/
 export default defineConfig(({ command, mode }) => {
   const isElectron = mode === 'electron'
+  const mainProcessEntries = collectMainProcessEntries()
 
   return {
     plugins: [
@@ -16,24 +48,19 @@ export default defineConfig(({ command, mode }) => {
         {
           // Main process
           entry: 'electron/main/index.js',
-          // onstart(options) {
-          //   options.startup()
-          // },
           vite: {
             build: {
               outDir: 'dist-electron',
               rollupOptions: {
-                input: {
-                  index: resolve(__dirname, 'electron/main/index.js'),
-                  'protocol-handler': resolve(__dirname, 'electron/main/protocol-handler.js'), // 显式包含
-                },
+                input: mainProcessEntries,
                 output: {
                   entryFileNames: '[name].js',
                   preserveModules: true, // 保留所有模块
-                  preserveModulesRoot: path.resolve(__dirname, 'electron/main'), // 绝对路径\\\
+                  preserveModulesRoot: path.resolve(__dirname, 'electron/main'), // 绝对路径
                   format: 'cjs', // 输出格式为 CommonJS
-                }
-              }
+                },
+                // external: [...Object.keys(dependencies || {})],
+              },
             }
           }
         },
