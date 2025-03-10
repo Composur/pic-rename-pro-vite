@@ -29,14 +29,16 @@
     "@vue/eslint-config-typescript": "^14.5.0",
     "electron": "^27.1.0",
     "electron-builder": "^24.6.4",
-    "eslint": "^8.54.0",
+    "eslint": "^9.22.0",
     "eslint-plugin-vue": "^9.18.1",
+    "rollup-plugin-copy": "^3.5.0",
     "sass": "^1.69.5",
     "terser": "^5.39.0",
     "typescript": "^5.2.2",
     "vite": "^5.0.0",
     "vite-plugin-electron": "^0.15.4",
     "vite-plugin-electron-renderer": "^0.14.5",
+    "vite-plugin-static-copy": "^2.3.0",
     "vue-tsc": "^1.8.22"
   },
   "engines": {
@@ -55,6 +57,7 @@
     ],
     "mac": {
       "category": "public.app-category.utilities",
+      "icon": "a.icns",
       "target": [
         "dmg"
       ]
