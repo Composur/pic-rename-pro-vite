@@ -4,8 +4,8 @@ import electron from 'vite-plugin-electron'
 import renderer from 'vite-plugin-electron-renderer'
 import { resolve } from 'path'
 import path from 'path'
-// import { dependencies } from './package.json'
 import fs from 'fs'
+import copy from 'rollup-plugin-copy'
 
 // 递归收集目录下的所有 JS 文件
 function collectMainProcessEntries() {
@@ -59,7 +59,17 @@ export default defineConfig(({ command, mode }) => {
                   preserveModulesRoot: path.resolve(__dirname, 'electron/main'), // 绝对路径
                   format: 'cjs', // 输出格式为 CommonJS
                 },
-                // external: [...Object.keys(dependencies || {})],
+                plugins: [
+                  copy({
+                    targets: [
+                      {
+                        src: 'electron/main/assets/*',
+                        dest: 'dist-electron/assets'
+                      }
+                    ],
+                    hook: 'writeBundle'
+                  })
+                ]
               },
             }
           }
@@ -79,7 +89,7 @@ export default defineConfig(({ command, mode }) => {
           }
         }
       ]),
-      isElectron && renderer(),
+      isElectron && renderer()
     ],
     resolve: {
       alias: {
@@ -89,15 +99,6 @@ export default defineConfig(({ command, mode }) => {
     server: {
       host: '0.0.0.0',
     },
-    // css: {
-    //   preprocessorOptions: {
-    //     scss: {
-    //       additionalData: `@use "@/styles/variables.scss" as *;`
-    //     }
-    //   },
-    //   // 确保CSS被正确提取和处理
-    //   extract: true,
-    // },
     build: {
       // 确保样式文件被正确打包
       cssCodeSplit: true,

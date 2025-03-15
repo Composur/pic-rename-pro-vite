@@ -128,7 +128,7 @@ import {
 } from "@element-plus/icons-vue"
 import { createWorker } from "tesseract.js"
 import { computed, ref } from "vue"
-import { FileResult, SaveResult } from "electron/main/types"
+import type { FileResult, SaveResult } from "electron/main/types"
 
 // 图片文件列表
 interface ImageFile {
